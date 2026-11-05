@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 
 import httpx
 import openai
@@ -228,3 +229,30 @@ def test_provider_selection_prefers_gemini_key(monkeypatch):
 
     assert ai.config.get_provider_name() == "gemini"
     assert ai.config.get_provider_api_key() == "gemini-test-key"
+
+
+def test_streamlit_hosted_secrets_configure_gemini(monkeypatch):
+    secrets = {
+        "AI_PROVIDER": "gemini",
+        "GEMINI_API_KEY": "hosted-test-key",
+        "GEMINI_MODEL": "gemini-hosted-test",
+        "AI_TIMEOUT_SECONDS": 45,
+    }
+    monkeypatch.setattr(ai.config, "st", SimpleNamespace(secrets=secrets))
+    for name in secrets:
+        monkeypatch.delenv(name, raising=False)
+
+    assert ai.config._setting("GEMINI_API_KEY") == "hosted-test-key"
+    assert ai.config._setting("GEMINI_MODEL") == "gemini-hosted-test"
+    assert ai.config._setting("AI_TIMEOUT_SECONDS") == "45"
+
+
+def test_environment_values_override_streamlit_secrets(monkeypatch):
+    monkeypatch.setattr(
+        ai.config,
+        "st",
+        SimpleNamespace(secrets={"GEMINI_API_KEY": "hosted-test-key"}),
+    )
+    monkeypatch.setenv("GEMINI_API_KEY", "environment-test-key")
+
+    assert ai.config._setting("GEMINI_API_KEY") == "environment-test-key"

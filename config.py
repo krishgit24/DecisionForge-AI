@@ -9,9 +9,24 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+import streamlit as st
+from streamlit.errors import StreamlitSecretNotFoundError
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
+
+
+def _setting(name: str, default: str = "") -> str:
+    """Read environment configuration first, then hosted Streamlit secrets."""
+    value = os.getenv(name, "").strip()
+    if value:
+        return value
+    try:
+        secret = st.secrets.get(name, default)
+    except StreamlitSecretNotFoundError:
+        return default
+    return str(secret).strip() if secret is not None else default
+
 
 APP_NAME = "DecisionForge AI"
 APP_TAGLINE = "An Explainable Generative AI System for Multi-Criteria Decision Analysis"
@@ -27,9 +42,9 @@ RATING_MIN = 1.0
 RATING_MAX = 10.0
 
 # --- AI settings -------------------------------------------------------------
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "").strip() or "gemini-3.1-flash-lite"
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "").strip() or "gpt-4o-mini"
-AI_PROVIDER = os.getenv("AI_PROVIDER", "").strip().lower()
+GEMINI_MODEL = _setting("GEMINI_MODEL") or "gemini-3.1-flash-lite"
+OPENAI_MODEL = _setting("OPENAI_MODEL") or "gpt-4o-mini"
+AI_PROVIDER = _setting("AI_PROVIDER").lower()
 # Number of *repair* attempts after the first call when the model returns
 # malformed JSON. Total calls per step are therefore 1 + MAX_AI_REPAIRS.
 MAX_AI_REPAIRS = 1
@@ -40,22 +55,22 @@ _PLACEHOLDER_KEYS = {
 }
 
 
-def _float_env(name: str, default: float) -> float:
+def _float_setting(name: str, default: float) -> float:
     try:
-        value = float(os.getenv(name, "") or default)
+        value = float(_setting(name, str(default)) or default)
         return value if value > 0 else default
     except ValueError:
         return default
 
 
-AI_TIMEOUT_SECONDS = _float_env(
-    "AI_TIMEOUT_SECONDS", _float_env("OPENAI_TIMEOUT_SECONDS", 60.0))
+AI_TIMEOUT_SECONDS = _float_setting(
+    "AI_TIMEOUT_SECONDS", _float_setting("OPENAI_TIMEOUT_SECONDS", 60.0))
 OPENAI_TIMEOUT_SECONDS = AI_TIMEOUT_SECONDS
 
 
 def get_api_key() -> str | None:
     """Return the OpenAI API key or ``None``. Never log the return value."""
-    key = os.getenv("OPENAI_API_KEY", "").strip()
+    key = _setting("OPENAI_API_KEY")
     if key.lower() in _PLACEHOLDER_KEYS:
         return None
     return key
@@ -63,7 +78,7 @@ def get_api_key() -> str | None:
 
 def get_gemini_api_key() -> str | None:
     """Return the Gemini API key or ``None``. Never log the return value."""
-    key = os.getenv("GEMINI_API_KEY", "").strip()
+    key = _setting("GEMINI_API_KEY")
     if key.lower() in _PLACEHOLDER_KEYS:
         return None
     return key

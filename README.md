@@ -182,7 +182,30 @@ streamlit run app.py
 
 The app opens at <http://localhost:8501>.
 
-## 16. Testing
+## 16. Deploy to Streamlit Community Cloud
+
+1. Push the project to a GitHub repository. The repository may be public or private; Community Cloud must have access to it.
+2. Sign in at [share.streamlit.io](https://share.streamlit.io) with the GitHub account that can access the repository.
+3. Choose **Create app** → **Yup, I have an app**.
+4. Select repository `krishgit24/DecisionForge-AI`, branch `main`, and main file path `app.py`.
+5. In **Advanced settings**, choose Python 3.12. In the **Secrets** box, enter the following TOML, replacing the placeholder with a newly generated Gemini API key:
+
+   ```toml
+   AI_PROVIDER = "gemini"
+   GEMINI_API_KEY = "paste-your-new-key-here"
+   GEMINI_MODEL = "gemini-3.1-flash-lite"
+   AI_TIMEOUT_SECONDS = 60
+   ```
+
+6. Save the settings and click **Deploy**. Wait for the build to finish, then open the generated `*.streamlit.app` URL and try **New Analysis → Live GenAI**.
+
+The app reads hosted credentials from Streamlit secrets and reads local development credentials from `.env`. Never put a real key in GitHub, `.env.example`, a screenshot, or a chat message. If the key was exposed, revoke it and create another. To update a deployed key later, open the app's settings and edit its secrets.
+
+The root `requirements.txt` is used to install Python dependencies. GitHub pushes to the selected branch trigger app updates. Keep the **Sample demo** as a fallback if Gemini quota or network access is unavailable.
+
+**Public-app privacy:** anyone with the app URL can use a public deployment. This project has no login or per-user data separation, so do not enter sensitive personal or confidential decision data. Saved analyses use a local SQLite database; Community Cloud's app filesystem is not a durable multi-user database, so treat saved history as temporary. Use a managed database and authentication before using this app for sensitive or persistent shared data.
+
+## 17. Testing
 
 ```powershell
 python -m pytest -q
@@ -190,11 +213,11 @@ python -m pytest -q
 
 Tests cover the scoring engine, database persistence, validation, AI-response handling (with a fake provider) and Streamlit page flows. No test calls the network.
 
-## 17. Demo instructions
+## 18. Demo instructions
 
 See [`DEMO_GUIDE.md`](DEMO_GUIDE.md) for a rehearsable 5-minute demo, the project introduction and viva questions. Quick check without an API key: **New Analysis → Sample demo → Load sample analysis → Confirm**, then move the *Scalability* and *Budget Cost* sliders.
 
-## 18. Limitations
+## 19. Limitations
 
 * AI ratings are estimates; the AI cannot verify current prices, versions or benchmarks.
 * Weighted-sum MCDA assumes criteria are independent and fully compensatory.
@@ -204,7 +227,7 @@ See [`DEMO_GUIDE.md`](DEMO_GUIDE.md) for a rehearsable 5-minute demo, the projec
 * Sample scenarios are illustrative data, not verified facts.
 * The default model name may need updating as providers retire models.
 
-## 19. Future enhancements
+## 20. Future enhancements
 
 * Additional providers (Azure OpenAI, local models) via the `LLMProvider` interface.
 * Sensitivity analysis showing the weight at which the winner changes.

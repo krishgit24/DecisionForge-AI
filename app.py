@@ -8,46 +8,38 @@ utils.setup_page("Home", "🧭")
 
 utils.hero(
     "DecisionForge AI",
-    "A clearer way to compare choices. Explore options, weigh what matters, and understand why a result ranks first.",
+    "Make complex choices easier to compare. Set your priorities, review the reasoning, and see what drives the result.",
 )
 
-st.markdown("### From a difficult decision to a reasoned choice")
-st.markdown(
-    "Describe the decision in everyday language. DecisionForge helps structure the comparison, "
-    "then shows how your priorities shape the result."
-)
+start, mode = st.columns([1, 2], vertical_alignment="center")
+with start:
+    st.page_link("pages/1_New_Analysis.py", label="Start an analysis", icon=":material/arrow_forward:")
+with mode:
+    if config.has_api_key():
+        st.caption(f"Live analysis is ready with {config.get_provider_display_name()}. Sample scenarios are available too.")
+    else:
+        st.caption("Start with a sample scenario—no API key is needed.")
 
-c1, c2, c3 = st.columns(3)
-with c1.container(border=True):
-    st.markdown("#### :material/auto_awesome: AI helps you explore")
-    st.write("Suggests options and criteria, drafts strengths and risks, and estimates ratings for you to review.")
-with c2.container(border=True):
-    st.markdown("#### :material/functions: Scores stay transparent")
-    st.write("A consistent scoring method turns your ratings and priorities into a reproducible ranking.")
-with c3.container(border=True):
-    st.markdown("#### :material/tune: You stay in control")
-    st.write("Review estimates, edit ratings, adjust priorities, and save the comparison for later.")
+st.markdown("### Two parts. One clear comparison.")
+ai, scoring = st.columns(2)
+with ai.container(border=True):
+    st.markdown("#### :material/auto_awesome: AI organizes the decision")
+    st.write("It can suggest options and criteria, and draft ratings and trade-offs for you to review.")
+with scoring.container(border=True):
+    st.markdown("#### :material/functions: Python calculates the result")
+    st.write("The weighted scores update as you change priorities. The AI never calculates the final ranking.")
 
-if config.has_api_key():
-    st.success(
-        f"Live analysis is ready with {config.get_provider_display_name()}. You can also use sample scenarios.",
-        icon=":material/bolt:")
-else:
-    st.info(
-        "Try a guided sample now. Live AI analysis becomes available when a provider key is configured.",
-        icon=":material/science:")
-
-st.markdown("### How it works")
+st.markdown("### Your decision, step by step")
 steps = st.columns(4)
 for col, number, title, detail in zip(
     steps,
     ("01", "02", "03", "04"),
-    ("Describe", "Review", "Compare", "Save"),
+    ("Describe", "Review", "Adjust", "Save"),
     (
-        "Add your decision and constraints, or load a sample.",
-        "Check the proposed options, criteria, and ratings.",
-        "Adjust priorities and see scores update immediately.",
-        "Keep your analysis in local history.",
+        "Enter your decision or choose a sample.",
+        "Check and edit the suggested ratings.",
+        "Change weights to explore different priorities.",
+        "Reopen your comparison from History.",
     ),
 ):
     with col.container(border=True):
@@ -55,9 +47,4 @@ for col, number, title, detail in zip(
         st.markdown(f"#### {title}")
         st.write(detail)
 
-st.markdown("### Ready to get started?")
-left, right = st.columns([1, 2], vertical_alignment="center")
-with left:
-    st.page_link("pages/1_New_Analysis.py", label="Start an analysis", icon=":material/arrow_forward:")
-with right:
-    st.caption("No key needed to explore sample scenarios. Your saved analyses stay on this device.")
+st.caption("AI-generated ratings are estimates. Review them before using a result to support a real decision.")
